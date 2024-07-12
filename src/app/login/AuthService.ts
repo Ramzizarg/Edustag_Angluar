@@ -1,86 +1,40 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
-import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
-export interface Role {
-  id: number;
-  name: string;
+export interface LoginResponse {
+  token: string;
+  role: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private baseUrl: string = 'http://localhost:8089/api/';
+  private baseUrl: string = 'http://localhost:8089/api/auth';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient) {}
 
-  httpOptions = {
-    headers: new HttpHeaders({
-      'Content-Type': 'application/json'
-    })
-  };
-
-  login(email: string, password: string): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}auth/login`, { email, password }, this.httpOptions)
-      .pipe(
-        tap(res => {
-          if (res && res.accessToken) {
-            this.saveToken(res.accessToken);
-            this.saveRoles(res.roles);
-            console.log('Token stored');
-          }
-        }),
-        catchError(error => {
-          console.error('Login error:', error);
-          return throwError(error);
-        })
-      );
-  }
-
-  saveToken(token: string): void {
-    localStorage.setItem('token', token);
-  }
-
-  saveRoles(roles: string[]): void {
-    localStorage.setItem('roles', JSON.stringify(roles));
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  getRoles(): Role[] {
-    const roles = localStorage.getItem('roles');
-    return roles ? JSON.parse(roles) : [];
-  }
-
-  hasRole(role: string): boolean {
-    const roles = this.getRoles();
-    console.log('Checking role:', role, 'Available roles:', roles);
-    return roles.some(r => r.name === role); // Adjust logic based on role structure
+  login(email: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
+      tap(response => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('role', response.role);
+      })
+    );
   }
 
   logout(): void {
     localStorage.removeItem('token');
-    localStorage.removeItem('roles');
-    this.router.navigate(['/login']).then(() => {
-      window.location.reload();
-    });
+    localStorage.removeItem('role');
   }
 
-  getUserId(): string | null {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return null;
-    }
-    const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-    return tokenPayload.id;
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  getRole(): string | null {
+    return localStorage.getItem('role');
   }
 }

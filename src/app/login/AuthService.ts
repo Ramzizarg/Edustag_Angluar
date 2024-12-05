@@ -1,40 +1,51 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-
-export interface LoginResponse {
-  token: string;
-  role: string;
-}
+import { map } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  private baseUrl: string = 'http://localhost:8089/api/auth';
+  private apiUrl = 'http://localhost:8089/api/auth';
 
   constructor(private http: HttpClient) {}
 
-  login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { email, password }).pipe(
-      tap(response => {
-        localStorage.setItem('token', response.token);
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/login`, { email, password }).pipe(
+      map(response => {
+        localStorage.setItem('jwtToken', response.token);
+        localStorage.setItem('userId', response.userId);
         localStorage.setItem('role', response.role);
+        return response;
       })
     );
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+  register(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/register`, { email, password }).pipe(
+      map(response => {
+        return response;
+      })
+    );
+  }
+  
+
+  getUserId(): string | null {
+    return localStorage.getItem('userId');
   }
 
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  getToken(): string | null {
+    return localStorage.getItem('jwtToken');
   }
 
   getRole(): string | null {
     return localStorage.getItem('role');
+  }
+
+  logout(): void {
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('role');
   }
 }

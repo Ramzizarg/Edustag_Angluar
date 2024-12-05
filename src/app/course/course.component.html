@@ -1,0 +1,52 @@
+<div class="container">
+  <h2>{{ isEditMode ? 'Edit Course' : 'Create Course' }}</h2>
+  <form [formGroup]="courseForm" (ngSubmit)="isEditMode ? updateCourse() : createCourse()">
+    <div class="form-group">
+      <label for="title">Title</label>
+      <input type="text" id="title" formControlName="title" class="form-control">
+      <div *ngIf="courseForm.get('title')?.invalid && courseForm.get('title')?.touched" class="text-danger">
+        Title is required.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <input type="text" id="description" formControlName="description" class="form-control">
+      <div *ngIf="courseForm.get('description')?.invalid && courseForm.get('description')?.touched" class="text-danger">
+        Description is required.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="startTime">Start Time</label>
+      <input type="datetime-local" id="startTime" formControlName="startTime" class="form-control">
+      <div *ngIf="courseForm.get('startTime')?.invalid && courseForm.get('startTime')?.touched" class="text-danger">
+        Start time is required.
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="endTime">End Time</label>
+      <input type="datetime-local" id="endTime" formControlName="endTime" class="form-control">
+      <div *ngIf="courseForm.get('endTime')?.invalid && courseForm.get('endTime')?.touched" class="text-danger">
+        End time is required.
+      </div>
+    </div>
+
+    <input type="text" id="teacherId" formControlName="teacherId" class="form-control" [value]="userId ? userId : ''" readonly hidden>
+
+    <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update Course' : 'Create Course' }}</button>
+    <button type="button" class="btn btn-secondary" (click)="clearForm()">Clear</button>
+  </form>
+
+  <h2>Courses</h2>
+  <div *ngIf="courses.length === 0">No courses available.</div>
+  <div *ngFor="let course of courses">
+    <h3>{{ course.title }}</h3>
+    <p>{{ course.description }}</p>
+    <p>Start Time: {{ course.startTime }}</p>
+    <p>End Time: {{ course.endTime }}</p>
+    <button (click)="editCourse(course)" class="btn btn-info">Edit</button>
+    <button (click)="deleteCourse(course.id)" class="btn btn-danger">Delete</button>
+  </div>
+</div>

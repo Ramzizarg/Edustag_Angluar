@@ -1,23 +1,33 @@
-// course.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8089/' // Replace with your actual API URL
-};
+import { Course } from './course';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CourseService {
-  private baseUrl = `${environment.apiUrl}/teacher/courses`;
+  private apiUrl = 'http://localhost:8089/teacher/courses';
 
   constructor(private http: HttpClient) {}
 
-  createCourse(courseData: any): Observable<any> {
-    return this.http.post<any>(this.baseUrl, courseData);
+  getAllCourses(): Observable<Course[]> {
+    return this.http.get<Course[]>(`${this.apiUrl}`);
+  }
+
+  getCourseById(id: number): Observable<Course> {
+    return this.http.get<Course>(`${this.apiUrl}/${id}`);
+  }
+
+  createCourse(userId: string, course: Course): Observable<Course> {
+    return this.http.post<Course>(`${this.apiUrl}/${userId}`, course);
+  }
+
+  updateCourse(id: number, course: Course): Observable<Course> {
+    return this.http.put<Course>(`${this.apiUrl}/${id}`, course);
+  }
+
+  deleteCourse(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
